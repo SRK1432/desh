@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller</title>
+    <style>
+        p {
+            font-size: xx-large;
+            font-weight: bold;
+        }
+        #totalPrice {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <label for="price">Selling Price:</label>
+        <input type="number" id="price">
+        <label for="name">Product Name:</label>
+        <input type="text" id="name">
+        <button id="addButton">Add Product</button>
+        <p>Products</p>
+        <ul id="productList"></ul>
+        <div id="totalPrice">Total Value Worth of Products: Rs 0</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addButton = document.getElementById('addButton');
+            const priceInput = document.getElementById('price');
+            const nameInput = document.getElementById('name');
+            const productList = document.getElementById('productList');
+            const totalPrice = document.getElementById('totalPrice');
+            let total = 0;
+
+            addButton.addEventListener('click', addHandler);
+
+            function addHandler() {
+                const price = parseFloat(priceInput.value);
+                const name = nameInput.value.trim();
+
+                if (price && name) {
+                    const newProduct = { name: name, price: price };
+                    appendProductToList(newProduct);
+                    updateTotalPrice(price);
+                    saveDataLocally(newProduct);
+                    clearInputs();
+                } else {
+                    alert('Please add both price and name');
+                }
+            }
+
+            function appendProductToList(product) {
+                const li = document.createElement('li');
+                li.textContent = product.price + '-' + product.name;
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete Product';
+                deleteButton.addEventListener('click', function() {
+                    deleteHandler(li, product.price);
+                });
+
+                li.appendChild(deleteButton);
+                productList.appendChild(li);
+            }
+
+            function deleteHandler(li, price) {
+                productList.removeChild(li);
+                updateTotalPrice(-price);
+            }
+
+            function updateTotalPrice(price) {
+                total += price;
+                totalPrice.textContent = 'Total Value Worth of Products: Rs ' + total;
+            }
+
+            function clearInputs() {
+                priceInput.value = '';
+                nameInput.value = '';
+            }
+
+            function saveDataLocally(product) {
+                const url = 'https://crudcrud.com/api/caa0d193995e41f789c5d8e39925e6ec';
+                axios.put(url, product)
+                    .then(response => {
+                        console.log('Data saved:', response.data);
+                    })
+                    .catch(error => {
+                        console.error('Error saving data:', error);
+                    });
+                const savedData = localStorage.getItem('products');
+                let products = savedData ? JSON.parse(savedData) : [];
+                products.push(product);
+                localStorage.setItem('products', JSON.stringify(products));
+            }
+        });
+    </script>
+</body>
+</html>
